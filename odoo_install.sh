@@ -41,7 +41,7 @@ OE_SUPERADMIN="admin"
 
 # Set to "True" to generate a random password, "False" to use the variable in OE_SUPERADMIN
 GENERATE_RANDOM_PASSWORD="True"
-OE_CONFIG="${OE_USER}/${OE_USER}"
+OE_CONFIG="${OE_USER}"
 
 # Set the website name
 WEBSITE_NAME="_"
@@ -172,37 +172,37 @@ sudo su $OE_USER -c "mkdir $OE_HOME/custom/addons"
 echo -e "\n---- Setting permissions on home folder ----"
 sudo chown -R $OE_USER:$OE_USER $OE_HOME/*
 
-if [ ! -e "/etc/${OE_CONFIG}.conf" ]; then
+if [ ! -e "/etc/$OE_USER/${OE_CONFIG}.conf" ]; then
 
     echo -e "* Create server config file"
     sudo mkdir /etc/$OE_USER
     sudo chown -R $OE_USER /etc/$OE_USER
-    sudo touch /etc/${OE_CONFIG}.conf
+    sudo touch /etc/$OE_USER/${OE_CONFIG}.conf
 
     echo -e "* Creating server config file"
-    sudo su root -c "printf '[options] \n; This is the password that allows database operations:\n' >> /etc/${OE_CONFIG}.conf"
+    sudo su root -c "printf '[options] \n; This is the password that allows database operations:\n' >> /etc/$OE_USER/${OE_CONFIG}.conf"
     if [ $GENERATE_RANDOM_PASSWORD = "True" ]; then
         echo -e "* Generating random admin password"
         OE_SUPERADMIN=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
     fi
 
-    sudo su root -c "printf 'admin_passwd = ${OE_SUPERADMIN}\n' >> /etc/${OE_CONFIG}.conf"
+    sudo su root -c "printf 'admin_passwd = ${OE_SUPERADMIN}\n' >> /etc/$OE_USER/${OE_CONFIG}.conf"
     if [ $OE_VERSION > "11.0" ];then
-        sudo su root -c "printf 'http_port = ${OE_PORT}\n' >> /etc/${OE_CONFIG}.conf"
+        sudo su root -c "printf 'http_port = ${OE_PORT}\n' >> /etc/$OE_USER/${OE_CONFIG}.conf"
     else
-        sudo su root -c "printf 'xmlrpc_port = ${OE_PORT}\n' >> /etc/${OE_CONFIG}.conf"
+        sudo su root -c "printf 'xmlrpc_port = ${OE_PORT}\n' >> /etc/$OE_USER/${OE_CONFIG}.conf"
     fi
 
-    sudo su root -c "printf 'logfile = /var/log/${OE_USER}/${OE_CONFIG}.log\n' >> /etc/${OE_CONFIG}.conf"
+    sudo su root -c "printf 'logfile = /var/log/${OE_USER}/${OE_CONFIG}.log\n' >> /etc/$OE_USER/${OE_CONFIG}.conf"
 
     if [ $IS_ENTERPRISE = "True" ]; then
-        sudo su root -c "printf 'addons_path=${OE_HOME}/enterprise/addons,${OE_HOME_EXT}/addons\n' >> /etc/${OE_CONFIG}.conf"
+        sudo su root -c "printf 'addons_path=${OE_HOME}/enterprise/addons,${OE_HOME_EXT}/addons\n' >> /etc/$OE_USER/${OE_CONFIG}.conf"
     else
-        sudo su root -c "printf 'addons_path=${OE_HOME_EXT}/addons,${OE_HOME}/custom/addons\n' >> /etc/${OE_CONFIG}.conf"
+        sudo su root -c "printf 'addons_path=${OE_HOME_EXT}/addons,${OE_HOME}/custom/addons\n' >> /etc/$OE_USER/${OE_CONFIG}.conf"
     fi
 
-    sudo chown $OE_USER:$OE_USER /etc/${OE_CONFIG}.conf
-    sudo chmod 640 /etc/${OE_CONFIG}.conf
+    sudo chown $OE_USER:$OE_USER /etc/$OE_USER/${OE_CONFIG}.conf
+    sudo chmod 640 /etc/$OE_USER/${OE_CONFIG}.conf
 
 fi
 
@@ -319,7 +319,8 @@ else
 fi
 
 echo -e "* Starting Odoo Service"
-sudo su root -c "/etc/init.d/$OE_CONFIG start"
+sudo service odoo restart
+
 echo "-----------------------------------------------------------"
 echo "Done! The Odoo server is up and running. Specifications:"
 echo "Port: $OE_PORT"
